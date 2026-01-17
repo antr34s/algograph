@@ -169,13 +169,26 @@ export default function HomeScreen() {
     
     if (cell.type === 'empty') {
       updateCell(cell, 'obstacle');
+      return;
+    }
+    if (cell.type === 'obstacle' && !isPressing) {
+      updateCell(cell, 'empty');
+      return;
     }
   };
 
   return (
     <View style={styles.container}>
-      <Title />
-      <InstructionBar message={instruction} />
+      <View
+        style={[
+          styles.header,
+          !isSmallScreen && { paddingRight: CONTROL_PANEL_WIDTH },
+        ]}
+      >
+
+        <Title />
+        <InstructionBar message={instruction} />
+      </View>
       <View
         style={[
           styles.content,
@@ -239,6 +252,10 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#05010a',
+  },
+  header: {
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   content: {
     flex: 1,
