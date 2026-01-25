@@ -1,18 +1,32 @@
 package com.algofind.service;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Random;
+import java.util.Set;
+
+import org.springframework.stereotype.Service;
+
 import com.algofind.PathfindingRequest;
 import com.algofind.PathfindingRequest.Point;
 import com.algofind.PathfindingResponse;
-import org.springframework.stereotype.Service;
-import java.util.*;
 
 @Service
 public class DFSService implements PathfindingService {
 
-    private static final int[][] DIRECTIONS = {{0, 1}, {1, 0}, {0, -1}, {-1, 0}};
+    private static final int[][] DIRECTIONS_4 = {{0, 1}, {1, 0}, {0, -1}, {-1, 0}};
+    private static final int[][] DIRECTIONS_8 = {
+        {0, 1}, {1, 0}, {0, -1}, {-1, 0},
+        {1, 1}, {1, -1}, {-1, 1}, {-1, -1}
+    };
     private final Random random = new Random();
     private int nodesExplored;
     private List<Point> visitedPath;
+    private boolean allowDiagonal;
 
     @Override
     public PathfindingResponse execute(PathfindingRequest request) {
@@ -20,6 +34,7 @@ public class DFSService implements PathfindingService {
         Point start = request.getStart();
         Point end = request.getEnd();
         Set<Point> barriers = new HashSet<>(request.getBarriers() != null ? request.getBarriers() : new ArrayList<>());
+        allowDiagonal = request.isAllowDiagonal();
 
         Set<Point> visited = new HashSet<>();
         Map<Point, Point> parent = new HashMap<>();
@@ -35,6 +50,11 @@ public class DFSService implements PathfindingService {
         }
 
         return new PathfindingResponse(new ArrayList<>(), visitedPath, nodesExplored, 0, false, getAlgorithmName());
+    }
+
+    @Override
+    public String getAlgorithmName() {
+        return "DFS";
     }
 
     private boolean dfs(Point current, Point end, int gridSize, Set<Point> barriers,
@@ -62,8 +82,9 @@ public class DFSService implements PathfindingService {
 
     private List<Point> getShuffledNeighbors(Point current, int gridSize, Set<Point> barriers, Set<Point> visited) {
         List<Point> neighbors = new ArrayList<>();
+        int[][] directions = allowDiagonal ? DIRECTIONS_8 : DIRECTIONS_4;
 
-        for (int[] direction : DIRECTIONS) {
+        for (int[] direction : directions) {
             int newX = current.getX() + direction[0];
             int newY = current.getY() + direction[1];
             Point neighbor = new Point(newX, newY);
@@ -93,10 +114,5 @@ public class DFSService implements PathfindingService {
         }
 
         return path;
-    }
-
-    @Override
-    public String getAlgorithmName() {
-        return "DFS";
     }
 }

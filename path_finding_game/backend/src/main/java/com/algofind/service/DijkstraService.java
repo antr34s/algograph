@@ -9,21 +9,26 @@ import java.util.*;
 @Service
 public class DijkstraService implements PathfindingService {
 
-    private static final int[][] DIRECTIONS = {{0, 1}, {1, 0}, {0, -1}, {-1, 0}};
-    private final Random random = new Random();
+    private static final int[][] DIRECTIONS_4 = {{0, 1}, {1, 0}, {0, -1}, {-1, 0}};
+    private static final int[][] DIRECTIONS_8 = {
+        {0, 1}, {1, 0}, {0, -1}, {-1, 0},
+        {1, 1}, {1, -1}, {-1, 1}, {-1, -1}
+    };
+
+    private static final double SQRT2 = Math.sqrt(2);
 
     private static class Node implements Comparable<Node> {
         Point point;
-        int distance;
+        double distance;
 
-        Node(Point point, int distance) {
+        Node(Point point, double distance) {
             this.point = point;
             this.distance = distance;
         }
 
         @Override
         public int compareTo(Node other) {
-            return Integer.compare(this.distance, other.distance);
+            return Double.compare(this.distance, other.distance);
         }
     }
 
@@ -33,15 +38,16 @@ public class DijkstraService implements PathfindingService {
         Point start = request.getStart();
         Point end = request.getEnd();
         Set<Point> barriers = new HashSet<>(request.getBarriers() != null ? request.getBarriers() : new ArrayList<>());
+        boolean allowDiagonal = request.isAllowDiagonal();
 
         PriorityQueue<Node> pq = new PriorityQueue<>();
-        Map<Point, Integer> distances = new HashMap<>();
+        Map<Point, Double> distances = new HashMap<>();
         Map<Point, Point> parent = new HashMap<>();
         Set<Point> visited = new HashSet<>();
         List<Point> visitedPath = new ArrayList<>();
 
-        pq.offer(new Node(start, 0));
-        distances.put(start, 0);
+        pq.offer(new Node(start, 0.0));
+        distances.put(start, 0.0);
         parent.put(start, null);
 
         int nodesExplored = 0;
@@ -63,10 +69,11 @@ public class DijkstraService implements PathfindingService {
                 return new PathfindingResponse(path, visitedPath, nodesExplored, 0, true, getAlgorithmName());
             }
 
-            List<Point> neighbors = getShuffledNeighbors(currentPoint, gridSize, barriers, visited, distances);
+            List<Point> neighbors = getNeighbors(currentPoint, gridSize, barriers, visited, allowDiagonal);
 
             for (Point neighbor : neighbors) {
-                int newDistance = distances.get(currentPoint) + 1;
+                double movementCost = isDiagonalMove(currentPoint, neighbor) ? SQRT2 : 1.0;
+                double newDistance = distances.get(currentPoint) + movementCost;
 
                 if (!distances.containsKey(neighbor) || newDistance < distances.get(neighbor)) {
                     distances.put(neighbor, newDistance);
@@ -79,10 +86,12 @@ public class DijkstraService implements PathfindingService {
         return new PathfindingResponse(new ArrayList<>(), visitedPath, nodesExplored, 0, false, getAlgorithmName());
     }
 
-    private List<Point> getShuffledNeighbors(Point current, int gridSize, Set<Point> barriers, Set<Point> visited, Map<Point, Integer> distances) {
+    private List<Point> getNeighbors(Point current, int gridSize, Set<Point> barriers,
+                                     Set<Point> visited, boolean allowDiagonal) {
         List<Point> neighbors = new ArrayList<>();
+        int[][] directions = allowDiagonal ? DIRECTIONS_8 : DIRECTIONS_4;
 
-        for (int[] direction : DIRECTIONS) {
+        for (int[] direction : directions) {
             int newX = current.getX() + direction[0];
             int newY = current.getY() + direction[1];
             Point neighbor = new Point(newX, newY);
@@ -94,8 +103,11 @@ public class DijkstraService implements PathfindingService {
             }
         }
 
-        Collections.shuffle(neighbors, random);
         return neighbors;
+    }
+
+    private boolean isDiagonalMove(Point from, Point to) {
+        return from.getX() != to.getX() && from.getY() != to.getY();
     }
 
     private boolean isValid(int x, int y, int gridSize) {

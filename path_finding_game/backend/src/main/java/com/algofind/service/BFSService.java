@@ -9,7 +9,11 @@ import java.util.*;
 @Service
 public class BFSService implements PathfindingService {
 
-    private static final int[][] DIRECTIONS = {{0, 1}, {1, 0}, {0, -1}, {-1, 0}};
+    private static final int[][] DIRECTIONS_4 = {{0, 1}, {1, 0}, {0, -1}, {-1, 0}};
+    private static final int[][] DIRECTIONS_8 = {
+        {0, 1}, {1, 0}, {0, -1}, {-1, 0},
+        {1, 1}, {1, -1}, {-1, 1}, {-1, -1}
+    };
     private final Random random = new Random();
 
     @Override
@@ -18,6 +22,7 @@ public class BFSService implements PathfindingService {
         Point start = request.getStart();
         Point end = request.getEnd();
         Set<Point> barriers = new HashSet<>(request.getBarriers() != null ? request.getBarriers() : new ArrayList<>());
+        boolean allowDiagonal = request.isAllowDiagonal();
 
         Queue<Point> queue = new LinkedList<>();
         Map<Point, Point> parent = new HashMap<>();
@@ -40,7 +45,7 @@ public class BFSService implements PathfindingService {
                 return new PathfindingResponse(path, visitedPath, nodesExplored, 0, true, getAlgorithmName());
             }
 
-            List<Point> neighbors = getShuffledNeighbors(current, gridSize, barriers, visited);
+            List<Point> neighbors = getShuffledNeighbors(current, gridSize, barriers, visited, allowDiagonal);
 
             for (Point neighbor : neighbors) {
                 queue.offer(neighbor);
@@ -53,10 +58,12 @@ public class BFSService implements PathfindingService {
         return new PathfindingResponse(new ArrayList<>(), visitedPath, nodesExplored, 0, false, getAlgorithmName());
     }
 
-    private List<Point> getShuffledNeighbors(Point current, int gridSize, Set<Point> barriers, Set<Point> visited) {
+    private List<Point> getShuffledNeighbors(Point current, int gridSize, Set<Point> barriers,
+                                             Set<Point> visited, boolean allowDiagonal) {
         List<Point> neighbors = new ArrayList<>();
+        int[][] directions = allowDiagonal ? DIRECTIONS_8 : DIRECTIONS_4;
 
-        for (int[] direction : DIRECTIONS) {
+        for (int[] direction : directions) {
             int newX = current.getX() + direction[0];
             int newY = current.getY() + direction[1];
             Point neighbor = new Point(newX, newY);
