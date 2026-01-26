@@ -1,7 +1,6 @@
 package com.algofind.service;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -67,7 +66,7 @@ public class DFSService implements PathfindingService {
         visited.add(current);
         nodesExplored++;
 
-        List<Point> neighbors = getShuffledNeighbors(current, gridSize, barriers, visited);
+        List<Point> neighbors = getNeighbors(current, gridSize, barriers, visited, allowDiagonal);
 
         for (Point neighbor : neighbors) {
             parent.put(neighbor, current);
@@ -80,7 +79,8 @@ public class DFSService implements PathfindingService {
         return false;
     }
 
-    private List<Point> getShuffledNeighbors(Point current, int gridSize, Set<Point> barriers, Set<Point> visited) {
+    private List<Point> getNeighbors(Point current, int gridSize, Set<Point> barriers,
+                                     Set<Point> visited, boolean allowDiagonal) {
         List<Point> neighbors = new ArrayList<>();
         int[][] directions = allowDiagonal ? DIRECTIONS_8 : DIRECTIONS_4;
 
@@ -96,7 +96,6 @@ public class DFSService implements PathfindingService {
             }
         }
 
-        Collections.shuffle(neighbors, random);
         return neighbors;
     }
 

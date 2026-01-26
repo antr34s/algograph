@@ -19,11 +19,6 @@ public class AlgorithmController {
     @Autowired
     private PathfindingServiceFactory serviceFactory;
 
-    @GetMapping("/helloworld")
-    String getHelloWorld(){
-       return "Hello World!";
-    }
-
     @PostMapping("/pathfind")
     public ResponseEntity<PathfindingResponse> findPath(@RequestBody PathfindingRequest request) {
         try {
