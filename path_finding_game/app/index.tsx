@@ -17,6 +17,7 @@ export default function HomeScreen() {
   const [isRunning, setIsRunning] = useState(false);
   const [algorithm, setAlgorithm] = useState('A*');
   const [speed, setSpeed] = useState(50);
+  const [selectedWeight, setSelectedWeight] = useState(Infinity);
   const [allowDiagonal, setAllowDiagonal] = useState(false);
   const [runCompleted, setRunCompleted] = useState(false);
   const [instruction, setInstruction] = useState(
@@ -245,7 +246,7 @@ export default function HomeScreen() {
       prev.map(row =>
         row.map(c =>
           c.row === cell.row && c.col === cell.col
-            ? { ...c, type: newType }
+            ? { ...c, type: newType, weight: cell.weight ?? c.weight }
             : c
         )
       )
@@ -269,11 +270,11 @@ export default function HomeScreen() {
 
     
     if (cell.type === 'empty') {
-      updateCell(cell, 'obstacle');
+      updateCell({ ...cell, weight: selectedWeight }, 'obstacle');
       return;
     }
     if (cell.type === 'obstacle' && !isPressing) {
-      updateCell(cell, 'empty');
+      updateCell({ ...cell, weight: 1 }, 'empty');
       return;
     }
   };
@@ -310,6 +311,8 @@ export default function HomeScreen() {
             runCompleted={runCompleted}
             onClear={resetGrid}
             onPlay={handleRunOrReset}
+            selectedWeight={selectedWeight}
+            setSelectedWeight={setSelectedWeight}
           />
         )}
         <View style={styles.gridContainer}>
@@ -323,6 +326,7 @@ export default function HomeScreen() {
                 onPressOut={() => setIsPressing(false)}
                 isPressing={isPressing}
                 isRunning={isRunning}
+                selectedWeight={selectedWeight}
               />
             </ScrollView>
           </ScrollView>
@@ -342,6 +346,8 @@ export default function HomeScreen() {
             runCompleted={runCompleted}
             onClear={resetGrid}
             onPlay={handleRunOrReset}
+            selectedWeight={selectedWeight}
+            setSelectedWeight={setSelectedWeight}
           />
         )}
       </View>

@@ -8,6 +8,7 @@ export const createGrid = (): Cell[][] => {
       row,
       col,
       type: 'empty',
+      weight:1
     }))
   );
 };

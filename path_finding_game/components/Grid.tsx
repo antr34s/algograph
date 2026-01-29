@@ -10,6 +10,7 @@ interface Props {
   onPressOut: () => void;
   isPressing: boolean;
   isRunning: boolean;
+  selectedWeight: number;
 }
 
 export default function Grid({

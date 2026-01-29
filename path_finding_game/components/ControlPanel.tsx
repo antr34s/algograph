@@ -13,6 +13,8 @@ interface Props {
   runCompleted: boolean;
   onPlay: () => void;
   onClear: () => void;
+  selectedWeight: number;
+  setSelectedWeight: (w: number)=> void;
 }
 
 const ALGORITHMS = ['A*', 'DIJKSTRA', 'BFS', 'DFS'];
@@ -29,7 +31,31 @@ export default function ControlPanel({
   runCompleted,
   onPlay,
   onClear,
+  selectedWeight,
+  setSelectedWeight,
 }: Props) {
+    const changeWeight = (direction: number) => {
+        if (selectedWeight === Infinity) {
+            setSelectedWeight(direction === 1 ? 2 : 9);
+            return;
+        }
+
+        let newWeight = selectedWeight + direction;
+
+        if (newWeight > 9) {
+            setSelectedWeight(Infinity);
+            return;
+        }
+
+        if (newWeight < 2) {
+            setSelectedWeight(Infinity);
+            return;
+        }
+
+        setSelectedWeight(newWeight);
+        
+  };
+    
   return (
     <View
         style={[
@@ -119,12 +145,49 @@ export default function ControlPanel({
                     {'RESET'}
                 </Text>
             </Pressable>
+            <View style={styles.weightControl}>
+                <Pressable style={styles.weightButton} onPress={() => changeWeight(-1)}>
+                    <Text selectable={false} style={styles.weightText}>−</Text>
+                </Pressable>
+
+                <Text selectable={false} style={styles.weightDisplay}>
+                    {selectedWeight === Infinity ? '∞' : selectedWeight}
+                </Text>
+
+                <Pressable style={styles.weightButton} onPress={() => changeWeight(1)}>
+                    <Text selectable={false} style={styles.weightText}>+</Text>
+                </Pressable>
+            </View>
         </View>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
+    weightControl: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+        marginTop: 10,
+        gap: 10,
+    },
+    weightButton: {
+        borderWidth: 1,
+        borderColor: '#00ffcc',
+        paddingHorizontal: 10,
+        paddingVertical: 4,
+        borderRadius: 6,
+    },
+    weightText: {
+        color: '#00ffcc',
+        fontSize: 18,
+    },
+    weightDisplay: {
+        color: '#00ffcc',
+        fontSize: 18,
+        textShadowColor: '#00ffcc',
+        textShadowRadius: 6,
+    },
     algorithmsRow: {
         flexDirection: 'row',
         gap: 6,
