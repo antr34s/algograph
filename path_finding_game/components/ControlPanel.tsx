@@ -74,7 +74,7 @@ export default function ControlPanel({
                 algorithm === algo && styles.buttonActive,
                 ]}
             >
-                <Text style={styles.buttonText}>{algo}</Text>
+                <Text selectable={false} style={styles.buttonText}>{algo}</Text>
             </Pressable>
             ))}
         </View>
@@ -88,7 +88,7 @@ export default function ControlPanel({
         >
             {/* Speed */}
             <View style={styles.controlItem}>
-            <Text style={styles.label}>Speed</Text>
+            <Text selectable={false} style={styles.label}>Speed</Text>
             <Slider
                 minimumValue={1}
                 maximumValue={100}
@@ -108,7 +108,7 @@ export default function ControlPanel({
                 allowDiagonal && styles.toggleActive,
             ]}
             >
-            <Text style={styles.buttonText}>
+            <Text selectable={false} style={styles.buttonText}>
                 Diagonal {allowDiagonal ? 'ON' : 'OFF'}
             </Text>
             </Pressable>
@@ -122,7 +122,7 @@ export default function ControlPanel({
                     isRunning && { opacity: 0.5 },
                 ]}
                 >
-                <Text style={styles.playText}>
+                <Text selectable={false} style={styles.playText}>
                     {isRunning
                         ? 'RUNNING...'
                         : runCompleted
@@ -141,7 +141,7 @@ export default function ControlPanel({
                     isRunning && { opacity: 0.5 },
                 ]}
                 >
-                <Text style={styles.buttonText}>
+                <Text selectable={false} style={styles.buttonText}>
                     {'RESET'}
                 </Text>
             </Pressable>

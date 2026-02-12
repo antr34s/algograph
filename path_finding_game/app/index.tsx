@@ -95,11 +95,10 @@ export default function HomeScreen() {
 
     setGrid(prev =>
       prev.map(row =>
-        row.map(cell =>
-          cell.type === 'visited' || cell.type === 'path'
-            ? { ...cell, type: 'empty' }
-            : cell
-        )
+        row.map(cell => ({
+          ...cell,
+          state: undefined,
+        }))
       )
     );
   };
@@ -109,6 +108,14 @@ export default function HomeScreen() {
     } else {
       runAlgorithm();
     }
+  };
+  const getBatchSize = () => {
+    if (speed < 20) return 1;
+    if (speed < 40) return 2;
+    if (speed < 60) return 4;
+    if (speed < 80) return 10;
+    if (speed < 95) return 15;
+    return 20;
   };
   const runAlgorithm = async () => {
     if (isRunning) return;
@@ -167,44 +174,55 @@ export default function HomeScreen() {
   const animatePath = async (
     path: { x: number; y: number }[]
   ) => {
-    for (const point of path) {
+    const batchSize = getBatchSize();
+
+    for (let i = 0; i < path.length; i += batchSize) {
+      const batch = path.slice(i, i + batchSize);
+
       setGrid(prev =>
         prev.map(row =>
-          row.map(cell =>
-            cell.row === point.x && cell.col === point.y
-            ? (cell.type !== 'start' && cell.type !== 'end'
-                ? { ...cell, type: 'path' }
-                : cell
-              )
-            : cell
-          )
+          row.map(cell => {
+            if (cell.type === 'start' || cell.type === 'end')
+              return cell;
+
+            const hit = batch.find(
+              p => p.x === cell.row && p.y === cell.col
+            );
+
+            if (hit) return { ...cell, state: 'path' };
+            return cell;
+          })
         )
       );
 
-      await new Promise(res =>
-        setTimeout(res, 101 - speed)
-      );
+      await new Promise(res => requestAnimationFrame(res));
     }
   };
   const animateVisited = async (
     visited: { x: number; y: number }[]
   ) => {
-    for (const point of visited) {
+    const batchSize = getBatchSize();
+
+    for (let i = 0; i < visited.length; i += batchSize) {
+      const batch = visited.slice(i, i + batchSize);
+
       setGrid(prev =>
         prev.map(row =>
-          row.map(cell =>
-            cell.row === point.x && cell.col === point.y
-              ? (cell.type === 'empty' || cell.type === 'obstacle'
-                  ? { ...cell, type: 'visited' }
-                  : cell)
-              : cell
-          )
+          row.map(cell => {
+            if (cell.type === 'start' || cell.type === 'end')
+              return cell;
+
+            const hit = batch.find(
+              p => p.x === cell.row && p.y === cell.col
+            );
+
+            if (hit) return { ...cell, state: 'visited' };
+            return cell;
+          })
         )
       );
 
-      await new Promise(res =>
-        setTimeout(res, 101 - speed)
-      );
+      await new Promise(res => requestAnimationFrame(res));
     }
   };
   const animateCells = async (
