@@ -8,7 +8,14 @@ import Grid from '../components/Grid';
 import ControlPanel from '../components/ControlPanel';
 import { useWindowDimensions } from 'react-native';
 import { GRID_SIZE } from '../utils/createGrid';
-
+import StatsModal from "../components/StatsModal";
+type RunStats = {
+  algorithm: string;
+  visitedNodes: number;
+  pathLength: number | string;
+  pathWeight: number | string;
+  gridSize: string;
+};
 export default function HomeScreen() {
   const [grid, setGrid] = useState<Cell[][]>([]);
   const [startSet, setStartSet] = useState(false);
@@ -48,6 +55,15 @@ export default function HomeScreen() {
   const cellSize = Math.floor(
       Math.min(cellSizeFromWidth, cellSizeFromHeight)
   );
+  const [showStats, setShowStats] = useState(false);
+
+  const [stats, setStats] = useState<RunStats>({
+    algorithm: "A*",
+    visitedNodes: 0,
+    pathLength: 0,
+    pathWeight: 0,
+    gridSize: `${GRID_SIZE} x ${GRID_SIZE}`,
+  });
   
   const buildRequest = () => {
     let start = null;
@@ -162,6 +178,40 @@ export default function HomeScreen() {
       setInstruction(
         data.pathFound ? 'Path found!' : 'No path found'
       );
+      const rawVisited = data.visitedPath.length;
+      const rawPath = data.path.length;
+
+      const adjustedVisited = Math.max(0, rawVisited - 2);
+      const adjustedPathLength =
+        rawPath === 0 ? 0 : Math.max(1, rawPath - 1);
+
+      
+      let calculatedCost = -1;
+
+      data.path.forEach((node: any) => {
+        const cell = grid[node.x][node.y];
+        calculatedCost += cell.weight ?? 1;
+      });
+
+      if (rawPath === 0) {
+        setStats({
+          algorithm: algorithm,
+          visitedNodes: adjustedVisited,
+          pathLength: "No path found",
+          pathWeight: "No path found",
+          gridSize: `${GRID_SIZE} x ${GRID_SIZE}`,
+        });
+      } else {
+        setStats({
+          algorithm: algorithm,
+          visitedNodes: adjustedVisited,
+          pathLength: adjustedPathLength,
+          pathWeight: calculatedCost,
+          gridSize: `${GRID_SIZE} x ${GRID_SIZE}`,
+        });
+      }
+
+      setShowStats(true);
     } catch (error) {
       console.error(error);
       setInstruction('Error running algorithm');
@@ -373,7 +423,15 @@ export default function HomeScreen() {
           />
         )}
       </View>
+      <StatsModal
+        visible={showStats}
+        onClose={() => setShowStats(false)}
+        stats={stats}
+        isSmallScreen={isSmallScreen}
+        controlPanelWidth={CONTROL_PANEL_WIDTH}
+      />
     </View>
+    
   );
 }
 
