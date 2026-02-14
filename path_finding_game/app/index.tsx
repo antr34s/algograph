@@ -1,6 +1,6 @@
 import Title from '../components/Title';
 import InstructionBar from '../components/InstructionBar';
-import { View, StyleSheet, ScrollView } from 'react-native';
+import { View, StyleSheet, Text, ScrollView } from 'react-native';
 import { useEffect, useState } from 'react';
 import { createGrid } from '../utils/createGrid';
 import { Cell, CellType } from '../types/grid';
@@ -39,11 +39,11 @@ export default function HomeScreen() {
   const isSmallScreen = width < 768;
 
   const availableWidth = isSmallScreen
-    ? width - GRID_PADDING * 2
+    ? width - GRID_PADDING * 2 - 20
     : width - CONTROL_PANEL_WIDTH - GRID_PADDING * 2;
 
   const availableHeight = isSmallScreen
-    ? height - HEADER_HEIGHT - CONTROL_PANEL_HEIGHT - GRID_PADDING * 2
+    ? height - HEADER_HEIGHT - CONTROL_PANEL_HEIGHT - GRID_PADDING * 2 -20
     : height - HEADER_HEIGHT - GRID_PADDING * 2;
 
   const cellSizeFromWidth =
@@ -176,8 +176,10 @@ export default function HomeScreen() {
 
       setRunCompleted(true);
       setInstruction(
-        data.pathFound ? 'Path found!' : 'No path found'
+        'Press RESET to remove the visited cells or CLEAR to empty the grid'
       );
+      setIsRunning(false);
+      await new Promise(res => setTimeout(res, 1500));
       const rawVisited = data.visitedPath.length;
       const rawPath = data.path.length;
 
@@ -304,14 +306,26 @@ export default function HomeScreen() {
   useEffect(() => {
     if (isRunning) {
       setInstruction('Visualizing algorithm...');
-    } else if (!startSet) {
-      setInstruction('Place the starting node');
-    } else if (!endSet) {
-      setInstruction('Place the ending node');
-    } else {
-      setInstruction('Draw obstacles or press PLAY');
+      return;
     }
-  }, [startSet, endSet, isRunning]);
+
+    if (runCompleted) {
+      setInstruction(
+        'Press RESET to remove the visited cells or CLEAR to empty the grid'
+      );
+      return;
+    }
+
+    if (!startSet) {
+      setInstruction('Click where you want to place the starting point');
+    } else if (!endSet) {
+      setInstruction('Click where you want to place the ending point');
+    } else {
+      setInstruction(
+        "Choose the obstacles' cost on the right side and click to place them or press PLAY"
+      );
+    }
+  }, [startSet, endSet, isRunning, runCompleted]);
 
   const updateCell = (cell: Cell, newType: CellType) => {
     setGrid(prev =>
@@ -345,9 +359,9 @@ export default function HomeScreen() {
       updateCell({ ...cell, weight: selectedWeight }, 'obstacle');
       return;
     }
+
     if (cell.type === 'obstacle' && !isPressing) {
       updateCell({ ...cell, weight: 1 }, 'empty');
-      return;
     }
   };
 
@@ -430,12 +444,30 @@ export default function HomeScreen() {
         isSmallScreen={isSmallScreen}
         controlPanelWidth={CONTROL_PANEL_WIDTH}
       />
+      <View style={styles.footer}>
+        <Text selectable={false} style={styles.footerText}>
+          © 2026 Antreas Panagi & Michael Panaetov
+        </Text>
+      </View>
     </View>
     
   );
 }
 
 const styles = StyleSheet.create({
+  footer: {
+    position: 'absolute',
+    bottom: 8,
+    left: 12,
+  },
+
+  footerText: {
+    color: '#00ffcc',
+    fontSize: 12,
+    opacity: 0.7,
+    textShadowColor: '#00ffcc',
+    textShadowRadius: 4,
+  },
   container: {
     flex: 1,
     backgroundColor: '#05010a',
