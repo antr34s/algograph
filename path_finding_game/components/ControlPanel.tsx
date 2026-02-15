@@ -1,5 +1,6 @@
 import { View, Text, StyleSheet, Pressable } from 'react-native';
 import Slider from '@react-native-community/slider';
+import { useState } from 'react';
 
 interface Props {
   algorithm: string;
@@ -13,9 +14,13 @@ interface Props {
   runCompleted: boolean;
   onPlay: () => void;
   onClear: () => void;
+  selectedWeight: number;
+  setSelectedWeight: (w: number)=> void;
 }
 
-const ALGORITHMS = ['A*', 'DIJKSTRA', 'BFS', 'DFS'];
+type AlgorithmType = 'A*' | 'DIJKSTRA' | 'BFS' | 'DFS';
+
+const ALGORITHMS: AlgorithmType[] = ['A*', 'DIJKSTRA', 'BFS', 'DFS'];
 
 export default function ControlPanel({
   algorithm,
@@ -29,7 +34,42 @@ export default function ControlPanel({
   runCompleted,
   onPlay,
   onClear,
+  selectedWeight,
+  setSelectedWeight,
 }: Props) {
+    const [hoveredAlgo, setHoveredAlgo] = useState<string | null>(null);
+    const [hoverDiagonal, setHoverDiagonal] = useState(false);
+    const MIN_WEIGHT = 2;
+    const MAX_WEIGHT = 9;
+
+    const changeWeight = (direction: 1 | -1) => {
+    if (selectedWeight === Infinity) {
+        setSelectedWeight(direction === 1 ? MIN_WEIGHT : MAX_WEIGHT);
+        return;
+    }
+
+    const newWeight = selectedWeight + direction;
+
+    if (newWeight > MAX_WEIGHT || newWeight < MIN_WEIGHT) {
+        setSelectedWeight(Infinity);
+        return;
+    }
+
+    setSelectedWeight(newWeight);
+    };
+    const algoInfo: Record<string, string> = {
+        'A*':
+            'A* is a smart search algorithm. It tries to guess which direction is closer to the goal and it finds the shortest path faster.',
+        
+        'DIJKSTRA':
+            'Dijkstra checks all possible paths step by step and guarantees the shortest path, but it can be slower than A*.',
+        
+        'BFS':
+            'BFS explores the grid evenly in all directions. It finds the shortest path only when all obstacles have the same cost.',
+        
+        'DFS':
+            'DFS goes as far as possible in one direction before turning back. It does not guarantee the shortest path.',
+    };
   return (
     <View
         style={[
@@ -43,12 +83,21 @@ export default function ControlPanel({
             <Pressable
                 key={algo}
                 onPress={() => setAlgorithm(algo)}
+                onHoverIn={() => setHoveredAlgo(algo)}
+                onHoverOut={() => setHoveredAlgo(null)}
                 style={[
                 styles.button,
                 algorithm === algo && styles.buttonActive,
                 ]}
             >
-                <Text style={styles.buttonText}>{algo}</Text>
+                <Text selectable={false} style={styles.buttonText}>{algo}</Text>
+                {hoveredAlgo === algo && (
+                    <View style={styles.tooltip}>
+                        <Text style={styles.tooltipText}>
+                        {algoInfo[algo]}
+                        </Text>
+                    </View>
+                )}
             </Pressable>
             ))}
         </View>
@@ -62,7 +111,7 @@ export default function ControlPanel({
         >
             {/* Speed */}
             <View style={styles.controlItem}>
-            <Text style={styles.label}>Speed</Text>
+            <Text selectable={false} style={styles.label}>Speed</Text>
             <Slider
                 minimumValue={1}
                 maximumValue={100}
@@ -76,15 +125,24 @@ export default function ControlPanel({
 
             {/* Diagonal */}
             <Pressable
-            onPress={() => setAllowDiagonal(!allowDiagonal)}
-            style={[
-                styles.toggle,
-                allowDiagonal && styles.toggleActive,
-            ]}
-            >
-            <Text style={styles.buttonText}>
-                Diagonal {allowDiagonal ? 'ON' : 'OFF'}
-            </Text>
+                onPress={() => setAllowDiagonal(!allowDiagonal)}
+                onHoverIn={() => setHoverDiagonal(true)}
+                onHoverOut={() => setHoverDiagonal(false)}
+                style={[
+                    styles.toggle,
+                    allowDiagonal && styles.toggleActive,
+                ]}
+                >
+                <Text selectable={false} style={styles.buttonText}>
+                    Diagonal {allowDiagonal ? 'ON' : 'OFF'}
+                </Text>
+                {hoverDiagonal && (
+                    <View style={styles.tooltip}>
+                        <Text style={styles.tooltipText}>
+                        Allow the algorithm to move diagonally, not only up, down, left, or right.
+                        </Text>
+                    </View>
+                )}
             </Pressable>
 
             {/* Play */}
@@ -96,11 +154,11 @@ export default function ControlPanel({
                     isRunning && { opacity: 0.5 },
                 ]}
                 >
-                <Text style={styles.playText}>
+                <Text selectable={false} style={styles.playText}>
                     {isRunning
                         ? 'RUNNING...'
                         : runCompleted
-                            ? 'CLEAR'
+                            ? 'RESET'
                             : 'PLAY'
                     }
                 </Text>
@@ -115,16 +173,82 @@ export default function ControlPanel({
                     isRunning && { opacity: 0.5 },
                 ]}
                 >
-                <Text style={styles.buttonText}>
-                    {'RESET'}
+                <Text selectable={false} style={styles.buttonText}>
+                    {'CLEAR'}
                 </Text>
             </Pressable>
+            <View style={styles.weightWrapper}>
+                <Text selectable={false} style={styles.label}>
+                    Obstacle Cost
+                </Text>
+
+                <View style={styles.weightControl}>
+                    <Pressable style={styles.weightButton} onPress={() => changeWeight(-1)}>
+                    <Text selectable={false} style={styles.weightText}>−</Text>
+                    </Pressable>
+
+                    <Text selectable={false} style={styles.weightDisplay}>
+                    {selectedWeight === Infinity ? '∞' : selectedWeight}
+                    </Text>
+
+                    <Pressable style={styles.weightButton} onPress={() => changeWeight(1)}>
+                    <Text selectable={false} style={styles.weightText}>+</Text>
+                    </Pressable>
+                </View>
+            </View>
         </View>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
+    tooltip: {
+        position: 'absolute',
+        right: '100%',
+        marginRight: 8,
+        top: '50%',
+        transform: [{ translateY: -20 }],
+        backgroundColor: '#111',
+        padding: 8,
+        borderRadius: 6,
+        width: 170,
+        borderWidth: 1,
+        borderColor: '#00ffcc',
+        zIndex: 999,
+    },
+    tooltipText: {
+        color: '#00ffcc',
+        fontSize: 10,
+    },
+    weightWrapper: {
+        alignItems: 'center',
+        marginTop: 16,
+        gap: 8,
+    },
+    weightControl: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+        gap: 10,
+        
+    },
+    weightButton: {
+        borderWidth: 1,
+        borderColor: '#00ffcc',
+        paddingHorizontal: 10,
+        paddingVertical: 4,
+        borderRadius: 6,
+    },
+    weightText: {
+        color: '#00ffcc',
+        fontSize: 18,
+    },
+    weightDisplay: {
+        color: '#00ffcc',
+        fontSize: 18,
+        textShadowColor: '#00ffcc',
+        textShadowRadius: 6,
+    },
     algorithmsRow: {
         flexDirection: 'row',
         gap: 6,
@@ -141,18 +265,22 @@ const styles = StyleSheet.create({
     controlsRowMobile: {
         flexDirection: 'row',
         flexWrap: 'wrap',
-        alignItems: 'center',
-        justifyContent: 'space-between',
+        alignItems: 'stretch',
+        justifyContent: 'center',
+        gap: 10,
     },
 
     controlItem: {
-        minWidth: 120,
+        minWidth: 80,
     },
 
     label: {
-        color: '#aaa',
-        fontSize: 12,
-        marginBottom: 4,
+        color: '#00ffcc',
+        fontSize: 14,
+        fontWeight: '600',
+        marginBottom: 6,
+        textShadowColor: '#00ffcc',
+        textShadowRadius: 4,
     },
     panel: {
         width: 220,
@@ -192,8 +320,11 @@ const styles = StyleSheet.create({
         textAlign: 'center',
     },
     toggle: {
-        marginTop: 16,
-        padding: 10,
+        marginTop: 10,
+        paddingVertical: 12,
+        paddingHorizontal: 10,
+        minHeight: 48,
+        justifyContent: 'center',
         borderWidth: 1,
         borderColor: '#00ffcc',
         borderRadius: 6,
@@ -202,8 +333,11 @@ const styles = StyleSheet.create({
         backgroundColor: '#00ffcc',
     },
     playButton: {
-        marginTop: 20,
-        padding: 12,
+        marginTop: 10,
+        paddingVertical: 12,
+        paddingHorizontal: 10,
+        minHeight: 48,
+        justifyContent: 'center',
         backgroundColor: '#00ffcc',
         borderRadius: 6,
     },
@@ -214,7 +348,10 @@ const styles = StyleSheet.create({
     },
     resetButton: {
         marginTop: 10,
-        padding: 10,
+        paddingVertical: 12,
+        paddingHorizontal: 10,
+        minHeight: 48,
+        justifyContent: 'center',
         borderWidth: 1,
         borderColor: '#ff0055',
         borderRadius: 6,

@@ -12,6 +12,11 @@ import org.springframework.stereotype.Service;
 import com.algofind.PathfindingRequest;
 import com.algofind.PathfindingRequest.Point;
 import com.algofind.PathfindingResponse;
+import com.algofind.model.GridGraph;
+import com.algofind.util.PathUtils;
+import org.springframework.stereotype.Service;
+
+import java.util.*;
 
 @Service
 public class DFSService implements PathfindingService {
@@ -24,7 +29,7 @@ public class DFSService implements PathfindingService {
 
     @Override
     public PathfindingResponse execute(PathfindingRequest request) {
-        int gridSize = request.getGridSize();
+        GridGraph grid = GridGraph.from(request);
         Point start = request.getStart();
         Point end = request.getEnd();
         Set<Point> barriers = new HashSet<>(request.getBarriers() != null ? request.getBarriers() : new ArrayList<>());
@@ -33,7 +38,9 @@ public class DFSService implements PathfindingService {
         Set<Point> visited = new HashSet<>();
         Map<Point, Point> parent = new HashMap<>();
         List<Point> visitedPath = new ArrayList<>();
+        List<Point> visitedPath = new ArrayList<>();
 
+        visited.add(start);
         visited.add(start);
         visitedPath.add(start);
         parent.put(start, null);
