@@ -23,37 +23,23 @@ export default function StatsModal({
   controlPanelWidth,
 }: StatsModalProps) {
     const leftOffset = isSmallScreen ? 0 : -controlPanelWidth / 2;
-  
+    const StatRow = ({ label, value }: { label: string; value: any }) => (
+        <View style={styles.statRow}>
+            <Text selectable={false} style={styles.label}>{label}</Text>
+            <Text selectable={false} style={styles.value}>{value}</Text>
+        </View>
+    );
     return (
     <Modal transparent animationType="fade" visible={visible}>
       <View style={styles.overlay}>
         <View style={[styles.container, { transform: [{ translateX: leftOffset }] }]}>
           <Text selectable={false} style={styles.title}>Run Statistics</Text>
 
-          <View style={styles.statRow}>
-            <Text selectable={false} style={styles.label}>Algorithm:</Text>
-            <Text selectable={false} style={styles.value}>{stats.algorithm}</Text>
-          </View>
-
-          <View style={styles.statRow}>
-            <Text selectable={false} style={styles.label}>Visited Nodes:</Text>
-            <Text selectable={false} style={styles.value}>{stats.visitedNodes}</Text>
-          </View>
-
-          <View style={styles.statRow}>
-            <Text selectable={false} style={styles.label}>Path Length:</Text>
-            <Text selectable={false} style={styles.value}>{stats.pathLength}</Text>
-          </View>
-
-          <View style={styles.statRow}>
-            <Text selectable={false} style={styles.label}>Path Cost:</Text>
-            <Text selectable={false} style={styles.value}>{stats.pathWeight}</Text>
-          </View>
-
-          <View style={styles.statRow}>
-            <Text selectable={false} style={styles.label}>Grid Size:</Text>
-            <Text selectable={false} style={styles.value}>{stats.gridSize}</Text>
-          </View>
+            <StatRow label="Algorithm:" value={stats.algorithm} />
+            <StatRow label="Visited Nodes:" value={stats.visitedNodes} />
+            <StatRow label="Path Length:" value={stats.pathLength} />
+            <StatRow label="Path Cost:" value={stats.pathWeight} />
+            <StatRow label="Grid Size:" value={stats.gridSize} />
 
           <TouchableOpacity style={styles.button} onPress={onClose}>
             <Text selectable={false} style={styles.buttonText}>Close</Text>

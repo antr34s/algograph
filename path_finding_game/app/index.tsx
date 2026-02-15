@@ -139,23 +139,6 @@ export default function HomeScreen() {
 
     setIsRunning(true);
 
-    // // Fake visited cells
-    // const visited: Cell[] = [];
-    // for (let i = 5; i < 20; i++) {
-    //   visited.push({ row: i, col: i, type: 'visited' });
-    // }
-
-    // // Fake path
-    // const path: Cell[] = [];
-    // for (let i = 20; i < 25; i++) {
-    //   path.push({ row: i, col: i, type: 'path' });
-    // }
-
-    // await animateCells(visited, 'visited');
-    // await animateCells(path, 'path');
-    // setRunCompleted(true);
-    // setInstruction('Visualization complete');
-    // setIsRunning(false);
     try {
       const response = await fetch('http://localhost:8080/api/pathfind', {
         method: 'POST',
@@ -171,8 +154,8 @@ export default function HomeScreen() {
 
       const data = await response.json();
 
-      await animateVisited(data.visitedPath);
-      await animatePath(data.path);
+      await animateCellsBatch(data.visitedPath, 'visited');
+      await animateCellsBatch(data.path, 'path');
 
       setRunCompleted(true);
       setInstruction(
@@ -223,80 +206,30 @@ export default function HomeScreen() {
   };
 
 
-  const animatePath = async (
-    path: { x: number; y: number }[]
+  const animateCellsBatch = async (
+    nodes: { x: number; y: number }[],
+    state: 'visited' | 'path'
   ) => {
     const batchSize = getBatchSize();
 
-    for (let i = 0; i < path.length; i += batchSize) {
-      const batch = path.slice(i, i + batchSize);
+    for (let i = 0; i < nodes.length; i += batchSize) {
+      const batch = nodes.slice(i, i + batchSize);
 
       setGrid(prev =>
         prev.map(row =>
           row.map(cell => {
-            if (cell.type === 'start' || cell.type === 'end')
-              return cell;
+            if (cell.type === 'start' || cell.type === 'end') return cell;
 
-            const hit = batch.find(
+            const hit = batch.some(
               p => p.x === cell.row && p.y === cell.col
             );
 
-            if (hit) return { ...cell, state: 'path' };
-            return cell;
+            return hit ? { ...cell, state } : cell;
           })
         )
       );
 
       await new Promise(res => requestAnimationFrame(res));
-    }
-  };
-  const animateVisited = async (
-    visited: { x: number; y: number }[]
-  ) => {
-    const batchSize = getBatchSize();
-
-    for (let i = 0; i < visited.length; i += batchSize) {
-      const batch = visited.slice(i, i + batchSize);
-
-      setGrid(prev =>
-        prev.map(row =>
-          row.map(cell => {
-            if (cell.type === 'start' || cell.type === 'end')
-              return cell;
-
-            const hit = batch.find(
-              p => p.x === cell.row && p.y === cell.col
-            );
-
-            if (hit) return { ...cell, state: 'visited' };
-            return cell;
-          })
-        )
-      );
-
-      await new Promise(res => requestAnimationFrame(res));
-    }
-  };
-  const animateCells = async (
-    cells: Cell[],
-    type: CellType
-  ) => {
-    for (let i = 0; i < cells.length; i++) {
-      const cell = cells[i];
-
-      setGrid(prev =>
-        prev.map(row =>
-          row.map(c =>
-            c.row === cell.row && c.col === cell.col
-              ? { ...c, type }
-              : c
-          )
-        )
-      );
-
-      await new Promise(res =>
-        setTimeout(res, 101 - speed)
-      );
     }
   };
 

@@ -18,7 +18,9 @@ interface Props {
   setSelectedWeight: (w: number)=> void;
 }
 
-const ALGORITHMS = ['A*', 'DIJKSTRA', 'BFS', 'DFS'];
+type AlgorithmType = 'A*' | 'DIJKSTRA' | 'BFS' | 'DFS';
+
+const ALGORITHMS: AlgorithmType[] = ['A*', 'DIJKSTRA', 'BFS', 'DFS'];
 
 export default function ControlPanel({
   algorithm,
@@ -36,32 +38,37 @@ export default function ControlPanel({
   setSelectedWeight,
 }: Props) {
     const [hoveredAlgo, setHoveredAlgo] = useState<string | null>(null);
-    const changeWeight = (direction: number) => {
-        if (selectedWeight === Infinity) {
-            setSelectedWeight(direction === 1 ? 2 : 9);
-            return;
-        }
+    const [hoverDiagonal, setHoverDiagonal] = useState(false);
+    const MIN_WEIGHT = 2;
+    const MAX_WEIGHT = 9;
 
-        let newWeight = selectedWeight + direction;
+    const changeWeight = (direction: 1 | -1) => {
+    if (selectedWeight === Infinity) {
+        setSelectedWeight(direction === 1 ? MIN_WEIGHT : MAX_WEIGHT);
+        return;
+    }
 
-        if (newWeight > 9) {
-            setSelectedWeight(Infinity);
-            return;
-        }
+    const newWeight = selectedWeight + direction;
 
-        if (newWeight < 2) {
-            setSelectedWeight(Infinity);
-            return;
-        }
+    if (newWeight > MAX_WEIGHT || newWeight < MIN_WEIGHT) {
+        setSelectedWeight(Infinity);
+        return;
+    }
 
-        setSelectedWeight(newWeight);
-        
-  };
+    setSelectedWeight(newWeight);
+    };
     const algoInfo: Record<string, string> = {
-            'A*': 'Heuristic search. Optimal with admissible heuristic.',
-            'DIJKSTRA': 'Weighted shortest path. Always optimal.',
-            'BFS': 'Unweighted shortest path. Optimal for equal weights.',
-            'DFS': 'Depth exploration. Not optimal.',
+        'A*':
+            'A* is a smart search algorithm. It tries to guess which direction is closer to the goal and it finds the shortest path faster.',
+        
+        'DIJKSTRA':
+            'Dijkstra checks all possible paths step by step and guarantees the shortest path, but it can be slower than A*.',
+        
+        'BFS':
+            'BFS explores the grid evenly in all directions. It finds the shortest path only when all obstacles have the same cost.',
+        
+        'DFS':
+            'DFS goes as far as possible in one direction before turning back. It does not guarantee the shortest path.',
     };
   return (
     <View
@@ -118,15 +125,24 @@ export default function ControlPanel({
 
             {/* Diagonal */}
             <Pressable
-            onPress={() => setAllowDiagonal(!allowDiagonal)}
-            style={[
-                styles.toggle,
-                allowDiagonal && styles.toggleActive,
-            ]}
-            >
-            <Text selectable={false} style={styles.buttonText}>
-                Diagonal {allowDiagonal ? 'ON' : 'OFF'}
-            </Text>
+                onPress={() => setAllowDiagonal(!allowDiagonal)}
+                onHoverIn={() => setHoverDiagonal(true)}
+                onHoverOut={() => setHoverDiagonal(false)}
+                style={[
+                    styles.toggle,
+                    allowDiagonal && styles.toggleActive,
+                ]}
+                >
+                <Text selectable={false} style={styles.buttonText}>
+                    Diagonal {allowDiagonal ? 'ON' : 'OFF'}
+                </Text>
+                {hoverDiagonal && (
+                    <View style={styles.tooltip}>
+                        <Text style={styles.tooltipText}>
+                        Allow the algorithm to move diagonally, not only up, down, left, or right.
+                        </Text>
+                    </View>
+                )}
             </Pressable>
 
             {/* Play */}
