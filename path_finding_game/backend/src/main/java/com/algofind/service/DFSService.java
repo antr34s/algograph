@@ -44,6 +44,7 @@ public class DFSService implements PathfindingService {
         }
 
         for (Point neighbor : grid.getNeighbors(current, visited)) {
+            if (visited.contains(neighbor)) continue;
             visited.add(neighbor);
             visitedPath.add(neighbor);
             parent.put(neighbor, current);
