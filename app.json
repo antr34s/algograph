@@ -45,7 +45,7 @@
       "reactCompiler": true
     },
     "extra": {
-      "apiUrl": "https://algograph.io"
+      "apiUrl": "https://api.algograph.io"
     }
   }
 }
