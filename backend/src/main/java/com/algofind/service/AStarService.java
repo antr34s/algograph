@@ -1,8 +1,8 @@
 package com.algofind.service;
 
-import com.algofind.PathfindingRequest;
-import com.algofind.PathfindingRequest.Point;
-import com.algofind.PathfindingResponse;
+import com.algofind.dto.PathfindingRequest;
+import com.algofind.dto.PathfindingRequest.Point;
+import com.algofind.dto.PathfindingResponse;
 import com.algofind.model.GridGraph;
 import com.algofind.util.PathUtils;
 import org.springframework.stereotype.Service;
@@ -100,4 +100,5 @@ public class AStarService implements PathfindingService {
     public String getAlgorithmName() {
         return "A_STAR";
     }
+
 }

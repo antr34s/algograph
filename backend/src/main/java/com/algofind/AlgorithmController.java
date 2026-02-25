@@ -1,5 +1,7 @@
 package com.algofind;
 
+import com.algofind.dto.PathfindingRequest;
+import com.algofind.dto.PathfindingResponse;
 import com.algofind.service.PathfindingService;
 import com.algofind.service.PathfindingServiceFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -9,9 +11,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.CrossOrigin;
 
-@CrossOrigin(origins = "http://localhost:8081")
 @RestController
 @RequestMapping("/api")
 public class AlgorithmController {
