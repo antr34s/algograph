@@ -37,21 +37,25 @@ export default function ControlPanel({
   selectedWeight,
   setSelectedWeight,
 }: Props) {
+    const [infiniteMode, setInfiniteMode] = useState(
+    selectedWeight === Infinity
+    );
     const [hoveredAlgo, setHoveredAlgo] = useState<string | null>(null);
     const [hoverDiagonal, setHoverDiagonal] = useState(false);
+    const [collapsed, setCollapsed] = useState(false);
     const MIN_WEIGHT = 2;
     const MAX_WEIGHT = 9;
 
     const changeWeight = (direction: 1 | -1) => {
-    if (selectedWeight === Infinity) {
-        setSelectedWeight(direction === 1 ? MIN_WEIGHT : MAX_WEIGHT);
+    if (selectedWeight === 2) {
+        setSelectedWeight(direction === 1 ? 3 : MAX_WEIGHT);
         return;
     }
 
     const newWeight = selectedWeight + direction;
 
     if (newWeight > MAX_WEIGHT || newWeight < MIN_WEIGHT) {
-        setSelectedWeight(Infinity);
+        setSelectedWeight(2);
         return;
     }
 
@@ -73,10 +77,23 @@ export default function ControlPanel({
   return (
     <View
         style={[
-            styles.panel,
-            isSmallScreen && styles.panelMobile,
+        styles.panel,
+        isSmallScreen && styles.panelMobile,
         ]}
     >
+        {isSmallScreen && (
+        <Pressable
+            style={styles.accordionHeader}
+            onPress={() => setCollapsed(!collapsed)}
+        >
+            <Text style={styles.accordionTitle}>
+            Controls {collapsed ? '▼' : '▲'}
+            </Text>
+        </Pressable>
+        )}
+
+        {isSmallScreen && collapsed ? null : (
+        <>
         {/* Algorithms row */}
         <View style={styles.algorithmsRow}>
             {ALGORITHMS.map(algo => (
@@ -181,7 +198,22 @@ export default function ControlPanel({
                 <Text selectable={false} style={styles.label}>
                     Obstacle Cost
                 </Text>
-
+                <Pressable
+                    style={[
+                        styles.toggle,
+                        infiniteMode && styles.toggleActive,
+                    ]}
+                    onPress={() => {
+                        const newValue = !infiniteMode;
+                        setInfiniteMode(newValue);
+                        setSelectedWeight(newValue ? Infinity : 2);
+                    }}
+                    >
+                    <Text style={styles.buttonText}>
+                        Infinite Cost {infiniteMode ? 'ON' : 'OFF'}
+                    </Text>
+                </Pressable>
+                {!infiniteMode && (
                 <View style={styles.weightControl}>
                     <Pressable style={styles.weightButton} onPress={() => changeWeight(-1)}>
                     <Text selectable={false} style={styles.weightText}>−</Text>
@@ -195,13 +227,29 @@ export default function ControlPanel({
                     <Text selectable={false} style={styles.weightText}>+</Text>
                     </Pressable>
                 </View>
+                )}
             </View>
         </View>
+        </>
+        )}
     </View>
   );
 }
 
 const styles = StyleSheet.create({
+    accordionHeader: {
+        paddingVertical: 12,
+        paddingHorizontal: 10,
+        backgroundColor: '#00ffcc',
+        borderRadius: 6,
+        marginBottom: 8,
+    },
+
+    accordionTitle: {
+        color: '#05010a',
+        fontWeight: 'bold',
+        textAlign: 'center',
+    },
     tooltip: {
         position: 'absolute',
         right: '100%',
