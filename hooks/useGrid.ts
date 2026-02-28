@@ -1,16 +1,16 @@
 import { useEffect, useState } from 'react';
-import { createGrid, GRID_SIZE } from '../utils/createGrid';
+import { createGrid,  GRID_SIZE_LARGE, GRID_SIZE_SMALL } from '../utils/createGrid';
 import { Cell, CellType } from '../types/grid';
 import { PathfindingApiRequest } from '../services/api';
 
-export function useGrid(algorithm: string, allowDiagonal: boolean, selectedWeight: number) {
+export function useGrid(algorithm: string, allowDiagonal: boolean, selectedWeight: number, isSmallScreen: boolean) {
   const [grid, setGrid] = useState<Cell[][]>([]);
   const [startSet, setStartSet] = useState(false);
   const [endSet, setEndSet] = useState(false);
   const [isPressing, setIsPressing] = useState(false);
-
+  const GRID_SIZE=isSmallScreen ? GRID_SIZE_SMALL : GRID_SIZE_LARGE
   useEffect(() => {
-    setGrid(createGrid());
+    setGrid(createGrid(GRID_SIZE));
   }, []);
 
   const updateCell = (cell: Cell, newType: CellType) => {
@@ -53,7 +53,7 @@ export function useGrid(algorithm: string, allowDiagonal: boolean, selectedWeigh
   const resetGrid = () => {
     setStartSet(false);
     setEndSet(false);
-    setGrid(createGrid());
+    setGrid(createGrid(GRID_SIZE));
   };
 
   const resetPath = () => {

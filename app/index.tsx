@@ -8,9 +8,11 @@ import StatsModal from '../components/ui/StatsModal';
 import Title from '../components/ui/Title';
 import { useGrid } from '../hooks/useGrid';
 import { usePathfinding } from '../hooks/usePathfinding';
-import { GRID_SIZE } from '../utils/createGrid';
+import { GRID_SIZE_LARGE, GRID_SIZE_SMALL } from '../utils/createGrid';
 
 export default function HomeScreen() {
+  const { width, height } = useWindowDimensions();
+  const isSmallScreen = width < 768;
   const [algorithm, setAlgorithm] = useState('A*');
   const [speed, setSpeed] = useState(50);
   const [selectedWeight, setSelectedWeight] = useState(2);
@@ -20,34 +22,34 @@ export default function HomeScreen() {
     grid, setGrid, startSet, endSet,
     isPressing, setIsPressing,
     handleCellPress, resetGrid, resetPath, buildRequest,
-  } = useGrid(algorithm, allowDiagonal, selectedWeight);
+  } = useGrid(algorithm, allowDiagonal, selectedWeight, isSmallScreen);
 
   const {
     isRunning, runCompleted,
     stats, showStats, setShowStats,
     handleRunOrReset, reset,
-  } = usePathfinding({ grid, setGrid, speed, algorithm, startSet, endSet, buildRequest });
+  } = usePathfinding({ grid, setGrid, speed, algorithm, startSet, endSet, buildRequest , isSmallScreen});
 
-  const { width, height } = useWindowDimensions();
+  
   const CELL_BORDER = 0.5;
   const GRID_PADDING = 10;
   const HEADER_HEIGHT = 80;
   const CONTROL_PANEL_WIDTH = 220;
   const CONTROL_PANEL_HEIGHT = 120;
-  const isSmallScreen = width < 768;
-
+  
+  const GRID_SIZE = isSmallScreen ? GRID_SIZE_SMALL : GRID_SIZE_LARGE
   const availableWidth = isSmallScreen
-    ? width
+    ? width - GRID_PADDING * 2 - 10
     : width - CONTROL_PANEL_WIDTH - GRID_PADDING * 2;
 
   const availableHeight =isSmallScreen
-    ? height
+    ? height - GRID_PADDING * 2 - 10
     : height - HEADER_HEIGHT - GRID_PADDING * 2;
 
   const cellSize = Math.floor(
     Math.min(
-      availableWidth / GRID_SIZE - CELL_BORDER ,
-      availableHeight / GRID_SIZE - CELL_BORDER 
+      availableWidth / GRID_SIZE - CELL_BORDER * 2 ,
+      availableHeight / GRID_SIZE - CELL_BORDER * 2 
     )
   );
 

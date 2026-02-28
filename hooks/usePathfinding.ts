@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { Cell } from '../types/grid';
 import { RunStats } from '../types/stats';
 import { fetchPathfinding, PathfindingApiRequest } from '../services/api';
-import { GRID_SIZE } from '../utils/createGrid';
+import { GRID_SIZE_LARGE, GRID_SIZE_SMALL } from '../utils/createGrid';
 
 interface UsePathfindingParams {
   grid: Cell[][];
@@ -12,6 +12,7 @@ interface UsePathfindingParams {
   startSet: boolean;
   endSet: boolean;
   buildRequest: () => PathfindingApiRequest;
+  isSmallScreen:boolean;
 }
 
 export function usePathfinding({
@@ -22,7 +23,9 @@ export function usePathfinding({
   startSet,
   endSet,
   buildRequest,
+  isSmallScreen
 }: UsePathfindingParams) {
+  const GRID_SIZE = isSmallScreen ? GRID_SIZE_SMALL : GRID_SIZE_LARGE
   const [isRunning, setIsRunning] = useState(false);
   const [runCompleted, setRunCompleted] = useState(false);
   const [showStats, setShowStats] = useState(false);
